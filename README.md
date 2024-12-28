@@ -21,14 +21,14 @@ alias docker-brainrot='uv run "$DOCKER_BRAINROT_URL"'
 ### Set up a Dockerfile
 
 ```Dockerfile
-# Container-Name: docker-brainrot-test-app
-# Port-Map: 8049:8049
+# Container-Name: my-cool-app
+# Port-Map: 8050:8050
 
 FROM python:3.9-slim
 WORKDIR /app
 COPY ./html /app
-CMD ["python", "-m", "http.server", "8049"]
-EXPOSE 8049
+CMD ["python", "-m", "http.server", "8050"]
+EXPOSE 8050
 ```
 
 Note the `Container-Name` header, which is used to identify the container, and the `Port-Map` header, which specifies the port mapping for the container.
@@ -41,15 +41,14 @@ $ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
 
 ````
 [04:19:41] Connected to 100.98.129.49
-           Build context created at /tmp/build_context_a77d38a7-f631-4ddd-9808-58a84993bf23.tar.gz
+           Build context created at /tmp/build_context.tar.gz
            Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-           Build context uploaded to /tmp/build_context_a96f598e-68fd-4c24-a6a4-c832db85972b/build_context.tar.gz
-[04:19:42] Checking for existing container: docker-brainrot-test-app
-           Stopping and removing existing container: docker-brainrot-test-app
+           Build context uploaded to /tmp/my-cool-app_build_context/build_context.tar.gz
+[04:19:42] Checking for existing container: my-cool-app
+           Stopping and removing existing container: my-cool-app
 [04:19:52] Building the Docker image...
 [04:19:53] Running the Docker container...
-[04:19:54] Container docker-brainrot-test-app is now running.
-           Cleaning up remote build context directory: /tmp/build_context_a96f598e-68fd-4c24-a6a4-c832db85972b
+[04:19:54] Container my-cool-app is now running.
 ````
 
 ## OPTIONS
