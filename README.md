@@ -33,7 +33,7 @@ EXPOSE 8001
 
 Note the `Container-Name` header, which is used to identify the container, and the `Port-Map` header, which specifies the port mapping for the container.
 
-## Deploy the Dockerfile
+### Deploy the Dockerfile
 
 ```bash
 $ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
