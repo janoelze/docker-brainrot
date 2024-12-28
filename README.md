@@ -21,15 +21,15 @@ alias docker-brainrot='uv run "$DOCKER_BRAINROT_URL"'
 ### Set up a Dockerfile
 
 ```Dockerfile
-# Container-Name: my-cool-app
-# Port-Map: 8001:8001
+# Container-Name: my-cool--app
+# Port-Map: 8049:8049
 
 FROM python:3.9-slim
 WORKDIR /app
 COPY ./html /app
 ADD https://place-hold.it/100x100 /app/logo.png
-CMD ["python", "-m", "http.server", "8001"]
-EXPOSE 8001
+CMD ["python", "-m", "http.server", "8049"]
+EXPOSE 8049
 ```
 
 Note the `Container-Name` header, which is used to identify the container, and the `Port-Map` header, which specifies the port mapping for the container.
