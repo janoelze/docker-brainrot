@@ -1,14 +1,13 @@
 # docker-brainrot
 
-as part of an ongoing effort to not learn any actual docker deploy workflows and accelerate web development to mind-numbing speeds i'm releasing docker-brainrot, a python script that will take a Dockerfile and send it to a docker host of your choice.
+as part of my ongoing effort to avoid learning actual Docker deployment workflows and to accelerate web development to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
 
-it'll:
+Here’s what it does:
 
-* collect directories referenced from the `Dockerfile`
-* tarball these and move them to a build directory on the remote host
-* build the container
-* run the container
-* clean up after itself like a good script
+* Collects directories referenced in the Dockerfile
+* Creates a tarball of these directories and moves it to a build directory on the remote host
+* Builds and runs the container
+* Cleans up after itself like a good script
 
 ## using docker-brainrot
 
