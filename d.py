@@ -17,11 +17,8 @@ import click
 from rich.console import Console
 from rich.progress import track
 
-
-
 from lib.SSHClient import SSHClient
 from lib.helpers import log_message
-
 
 # Global flag for verbosity
 DEBUG_MODE = False
