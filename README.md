@@ -38,7 +38,7 @@ $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py \
 | `-f, --file`   | **Required**<br>The path to the Dockerfile to be deployed. Must be a valid and accessible file.   |
 | `-H, --host`   | **Required**<br>Specifies the remote Docker host in the format `username@host:port`.<br>- `username`: SSH username for authentication.<br>- `host`: Hostname or IP of the Docker host.<br>- `port`: Port for SSH (e.g., `22`). |
 
-## CUSTOM HEADERS
+## DOCKERFILE HEADERS
 
 | Header          | Description                                                                                       |
 |-----------------|---------------------------------------------------------------------------------------------------|
