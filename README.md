@@ -18,7 +18,7 @@ docker-brainrot requires no installation if run through uv.
 $ uv run ~/src/docker-howard-deploy/deploy.py < Dockerfile
 ```
 ```
-~/s/docker-test $ uv run ~/src/docker-howard-deploy/deploy.py < Dockerfile
+~/s/docker-test $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh < Dockerfile
 [02:43:32] Reading Dockerfile from standard input...                                                                                                                                                                                    deploy.py:174
            Connected to 100.98.129.49                                                                                                                                                                                                    deploy.py:42
 Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
