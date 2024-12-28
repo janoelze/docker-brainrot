@@ -1,67 +1,54 @@
-# docker-brainrot
+docker-brainrot  
+===============  
 
-as part of my – our! – ongoing effort to avoid learning actual Docker deployment workflows and to accelerate coding workflows to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
+as part of my – our! – ongoing effort to avoid learning any actual Docker deployment workflows and to accelerate coding workflows to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
 
-Here’s what it does:
+* Allows one-command deploys of Dockerfiles to remote hosts.
+* Collects files referenced via COPY and ADD commands in the Dockerfile and uploads them to the remote host.
+* Automatically (re)builds and runs the Docker container on the remote host.
 
-* Collects directories referenced in the Dockerfile
-* Creates a tarball of these directories and moves it to a build directory on the remote host
-* Builds and runs the container
-* Cleans up after itself like a good script
+## USAGE
 
-## using docker-brainrot
+### Create a Dockerfile with custom headers
 
-docker-brainrot requires no installation if run through uv. however you'll need to add custom headers to your Dockerfile to get persistent container names and port handling.
-
-```
-# Container-Name: docker-brainrot-test-app
-# Port-Map: 8000:8000
+```Dockerfile
+# Container-Name: my-cool-app
+# Port-Map: 8001:8001
 
 FROM python:3.9-slim
 WORKDIR /app
 COPY ./html /app
 ADD https://place-hold.it/100x100 /app/logo.png
-CMD ["python", "-m", "http.server", "8000"]
-EXPOSE 8000
+CMD ["python", "-m", "http.server", "8001"]
+EXPOSE 8001
 ```
 
-## let's deploy it!!
+## Run docker-brainrot via uv
 
-```
-$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.sh \
-  -f path/to/Dockerfile \
+```bash
+$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py \
+  -f ./path/to/Dockerfile \
   -H "user@100.98.129.49:22"
 ```
-```
-[02:43:32] Reading Dockerfile from standard input...                                                                                                                                                                                    deploy.py:174
-           Connected to 100.98.129.49                                                                                                                                                                                                    deploy.py:42
-Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-[02:43:33] Build context uploaded to /tmp/local_image_build_f36d63d6-fd49-4ca6-a0ee-82e278d72aca/build_context.tar.gz                                                                                                                   deploy.py:123
-           Checking for existing container: python-app                                                                                                                                                                                  deploy.py:131
-           Stopping and removing existing container: python-app                                                                                                                                                                         deploy.py:135
-[02:43:44] Building the Docker image...                                                                                                                                                                                                 deploy.py:143
-[02:43:47] Docker Build Output:                                                                                                                                                                                                         deploy.py:145
-> Sending build context to Docker daemon  4.608kB
->
-> Step 1/5 : FROM python:3.9-slim
->  ---> 473b3636d11e
-> Step 2/5 : WORKDIR /app
->  ---> Using cache
->  ---> aa5e78f9ecd1
-> Step 3/5 : COPY . /app
->  ---> d81b971a5920
-> Step 4/5 : CMD ["python", "-m", "http.server", "8000"]
->  ---> Running in ead44d0d82b9
-> Removing intermediate container ead44d0d82b9
->  ---> ad0e806eca18
-> Step 5/5 : EXPOSE 8000
->  ---> Running in fb3ad67429ca
-> Removing intermediate container fb3ad67429ca
->  ---> 5d0ae80c0049
-> Successfully built 5d0ae80c0049
-> Successfully tagged local_image:latest
-           Running the Docker container...                                                                                                                                                                                              deploy.py:152
-           Container python-app is now running.                                                                                                                                                                                         deploy.py:154
-           Cleaning up remote build context directory: /tmp/local_image_build_f36d63d6-fd49-4ca6-a0ee-82e278d72aca                                                                                                                      deploy.py:158
-           Disconnected from 100.98.129.49
-```
+
+## OPTIONS
+
+### `-f, --file`
+
+**Required**  
+The path to the Dockerfile to be deployed. Must be a valid and accessible file.
+
+### `-H, --host`
+
+**Required**  
+Specifies the remote Docker host in the format `username@host:port`.
+
+- `username`: SSH username for authentication.
+- `host`: Hostname or IP of the Docker host.
+- `port`: Port for SSH (e.g., `22`).
+
+## NOTES
+
+- You can create an alias for easier invocation, but uv allows you to run the script directly via a URL.
+- Ensure that the Container-Name header is set in the Dockerfile, as this is used to identify containers.
+- Container names must consist of alphanumeric characters and dashes (-).
