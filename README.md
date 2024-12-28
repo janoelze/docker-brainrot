@@ -31,6 +31,19 @@ $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py \
   -H "user@100.98.129.49:22"
 ```
 
+````bash
+[04:19:41] Connected to 100.98.129.49
+           Build context created at /tmp/build_context_a77d38a7-f631-4ddd-9808-58a84993bf23.tar.gz
+           Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+           Build context uploaded to /tmp/build_context_a96f598e-68fd-4c24-a6a4-c832db85972b/build_context.tar.gz
+[04:19:42] Checking for existing container: docker-brainrot-test-app
+           Stopping and removing existing container: docker-brainrot-test-app
+[04:19:52] Building the Docker image...
+[04:19:53] Running the Docker container...
+[04:19:54] Container docker-brainrot-test-app is now running.
+           Cleaning up remote build context directory: /tmp/build_context_a96f598e-68fd-4c24-a6a4-c832db85972b
+````
+
 ## OPTIONS
 
 | Option         | Description                                                                                       |
