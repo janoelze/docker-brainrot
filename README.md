@@ -33,6 +33,8 @@ CMD ["python", "-m", "http.server", "8000"]
 EXPOSE 8000
 ```
 
+## let's deploy it!!
+
 ```
 $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh < Dockerfile
 ```
