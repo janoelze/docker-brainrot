@@ -1,6 +1,6 @@
 # docker-brainrot
 
-as part of an ongoing effort to not learn any actual docker deploy workflows and accalerate web development to mind-numbing speeds i'm releasing docker-brainrot, a python script that will take a Dockerfile and send it to a docker host of your choice.
+as part of an ongoing effort to not learn any actual docker deploy workflows and accelerate web development to mind-numbing speeds i'm releasing docker-brainrot, a python script that will take a Dockerfile and send it to a docker host of your choice.
 
 it'll:
 
