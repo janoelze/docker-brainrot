@@ -28,7 +28,7 @@ EXPOSE 8000
 ## let's deploy it!!
 
 ```
-$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh \
+$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.sh \
   -f path/to/Dockerfile \
   -H "user@100.98.129.49:22"
 ```
