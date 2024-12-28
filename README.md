@@ -3,9 +3,9 @@ docker-brainrot
 
 as part of my ongoing effort to avoid learning any actual Docker deployment workflows and to accelerate coding workflows to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
 
-* Allows one-command deploys of Dockerfiles to remote hosts.
-* Collects files referenced via COPY and ADD commands in the Dockerfile and uploads them to the remote host.
-* Automatically (re)builds and runs the Docker container on the remote host.
+* One-command deploys to remote docker hosts
+* Collects files referenced via COPY/ADD in the Dockerfile and uploads them to the host
+* Builds, restarts/runs the Docker container on the host
 
 ## INSTALLATION
 
