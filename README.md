@@ -33,29 +33,18 @@ $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py \
 
 ## OPTIONS
 
-### `-f, --file`
-
-**Required**  
-The path to the Dockerfile to be deployed. Must be a valid and accessible file.
-
-### `-H, --host`
-
-**Required**  
-Specifies the remote Docker host in the format `username@host:port`.
-
-- `username`: SSH username for authentication.
-- `host`: Hostname or IP of the Docker host.
-- `port`: Port for SSH (e.g., `22`).
+| Option         | Description                                                                                       |
+|----------------|---------------------------------------------------------------------------------------------------|
+| `-f, --file`   | **Required**<br>The path to the Dockerfile to be deployed. Must be a valid and accessible file.   |
+| `-H, --host`   | **Required**<br>Specifies the remote Docker host in the format `username@host:port`.<br>- `username`: SSH username for authentication.<br>- `host`: Hostname or IP of the Docker host.<br>- `port`: Port for SSH (e.g., `22`). |
 
 ## CUSTOM HEADERS
 
-### `Container-Name`
-**Required**
-The name of the container to be deployed. Must be unique and consist of alphanumeric characters and dashes (-).
+| Header          | Description                                                                                       |
+|-----------------|---------------------------------------------------------------------------------------------------|
+| `Container-Name`| **Required**<br>The name of the container to be deployed. Must be unique and consist of alphanumeric characters and dashes (-). |
+| `Port-Map`      | **Optional**<br>The port mapping for the container. Must be in the format `host-port:container-port`. |
 
-### `Port-Map`
-**Optional**
-The port mapping for the container. Must be in the format `host-port:container-port`.
 
 ## NOTES
 
