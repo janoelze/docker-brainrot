@@ -11,7 +11,27 @@ Here’s what it does:
 
 ## using docker-brainrot
 
-docker-brainrot requires no installation if run through uv.
+docker-brainrot requires no installation if run through uv. however you'll need to add custom headers to your Dockerfile to get persistent container names and port handling.
+
+```
+# Container-Name: python-app
+# Port-Map: 8000:8000
+
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the current directory contents into the container at /app
+COPY . /app
+
+# Serve the /app/index.html file
+CMD ["python", "-m", "http.server", "8000"]
+
+# Make port 8000 available to the world outside this container
+EXPOSE 8000
+```
 
 ```
 $ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh < Dockerfile
