@@ -12,7 +12,8 @@ as part of my – our! – ongoing effort to avoid learning any actual Docker de
 Create an alias in your shell profile:
 
 ```bash
-alias docker-brainrot='uv run "https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py?v=$(date +%s)"'
+export DOCKER_BRAINROT_URL="https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py?v=$(date +%s)"
+alias docker-brainrot='uv run "$DOCKER_BRAINROT_URL"'
 ```
 
 ## USAGE
