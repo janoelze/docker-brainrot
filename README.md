@@ -39,7 +39,7 @@ Note the `Container-Name` header, which is used to identify the container, and t
 $ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
 ```
 
-````bash
+````
 [04:19:41] Connected to 100.98.129.49
            Build context created at /tmp/build_context_a77d38a7-f631-4ddd-9808-58a84993bf23.tar.gz
            Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
