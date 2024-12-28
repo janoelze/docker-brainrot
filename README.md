@@ -1,6 +1,6 @@
 # docker-brainrot
 
-as part of my ongoing effort to avoid learning actual Docker deployment workflows and to accelerate web development to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
+as part of my – our! – ongoing effort to avoid learning actual Docker deployment workflows and to accelerate coding workflows to absurd speeds, I’m releasing docker-brainrot, a Python script that takes a Dockerfile and deploys it to a Docker host of your choice.
 
 Here’s what it does:
 
@@ -36,7 +36,7 @@ EXPOSE 8000
 ## let's deploy it!!
 
 ```
-$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh < Dockerfile
+$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/deploy.sh -f test/Dockerfile -H "user@100.98.129.49:22"
 ```
 ```
 [02:43:32] Reading Dockerfile from standard input...                                                                                                                                                                                    deploy.py:174

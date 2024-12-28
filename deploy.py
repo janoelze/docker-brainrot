@@ -3,6 +3,7 @@
 # dependencies = [
 #   "paramiko",
 #   "rich",
+#   "click"
 # ]
 # ///
 
@@ -12,16 +13,9 @@ import os
 import tarfile
 import re
 import uuid
-import argparse
-from io import StringIO
+import click
 from rich.console import Console
 from rich.progress import track
-
-# Configuration: Adjust these values for your environment
-UNRAID_SERVER = "100.98.129.49"
-SSH_PORT = 22
-SSH_USER = "root"
-REMOTE_IMAGE_NAME = "local_image"
 
 console = Console()
 
@@ -91,29 +85,36 @@ def parse_comment_header(dockerfile_content):
 
     return container_name, port_map
 
-def create_build_context(dockerfile_content):
+def create_build_context(dockerfile_path):
     """Creates a tarball of the build context."""
     unique_id = str(uuid.uuid4())
-    context_path = f"build_context_{unique_id}.tar.gz"
+    context_path = f"/tmp/build_context_{unique_id}.tar.gz"
+    # read the Dockerfile
+    dockerfile_contents = open(dockerfile_path, "r").read()
+    dockerfile_dir = os.path.dirname(dockerfile_path)
     with tarfile.open(context_path, "w:gz") as tar:
-        # Add the Dockerfile
-        dockerfile_path = "Dockerfile"
-        with open(dockerfile_path, "w") as dockerfile:
-            dockerfile.write(dockerfile_content)
-        tar.add(dockerfile_path, arcname="Dockerfile")
-
-        # Add all files in the current directory (excluding the script itself)
-        for root, dirs, files in os.walk("."):
-            for file in files:
-                if file != os.path.basename(__file__):
-                    tar.add(os.path.join(root, file), arcname=os.path.relpath(os.path.join(root, file), "."))
+        # add the Dockerfile to the tarball
+        tar.add(dockerfile_path, arcname=os.path.basename(dockerfile_path))
+        # iterate over the lines in the Dockerfile
+        for line in dockerfile_contents.splitlines():
+            # if the line is a COPY or ADD command
+            if line.startswith("COPY") or line.startswith("ADD"):
+                # extract the source path
+                source_path = re.search(r"(?<=\s)(.*)(?=\s)", line).group(0)
+                # if the path is a URL, skip it
+                if source_path.startswith("http://") or source_path.startswith("https://"):
+                    continue
+                # construct the full path to the source file
+                full_source_path = os.path.join(dockerfile_dir, source_path)
+                # add the source file to the tarball
+                tar.add(full_source_path, arcname=source_path)
     return context_path
 
-def send_build_context(ssh_client, context_path):
+def send_build_context(ssh_client, context_path, container_name):
     """Uploads the build context tarball to the server."""
-    unique_dir = f"{REMOTE_IMAGE_NAME}_build_{uuid.uuid4()}"
-    remote_path = f"/tmp/{unique_dir}/build_context.tar.gz"
-    ssh_client.execute(f"mkdir -p /tmp/{unique_dir}")
+    build_dir = f"build_context_{uuid.uuid4()}"
+    remote_path = f"/tmp/{build_dir}/build_context.tar.gz"
+    ssh_client.execute(f"mkdir -p /tmp/{build_dir}")
     with open(context_path, "rb") as tarball:
         sftp = ssh_client.client.open_sftp()
         try:
@@ -123,8 +124,8 @@ def send_build_context(ssh_client, context_path):
             console.log(f"[bold green]Build context uploaded to {remote_path}")
         finally:
             sftp.close()
-    ssh_client.execute(f"cd /tmp/{unique_dir} && tar -xzf build_context.tar.gz")
-    return unique_dir
+    ssh_client.execute(f"cd /tmp/{build_dir} && tar -xzf build_context.tar.gz")
+    return build_dir
 
 def stop_and_remove_container(ssh_client, container_name):
     """Stops and removes an existing container."""
@@ -138,10 +139,10 @@ def stop_and_remove_container(ssh_client, container_name):
     else:
         console.log(f"[green]No existing container with the name {container_name} found.")
 
-def build_and_run_container(ssh_client, container_name, unique_dir, port_map):
-    """Builds and runs the Docker container on the Unraid server."""
+def build_and_run_container(ssh_client, container_name, build_dir, port_map):
+    """Builds and runs the Docker container on the remote server."""
     console.log("[cyan]Building the Docker image...")
-    build_output = ssh_client.execute(f"cd /tmp/{unique_dir} && docker build -t {REMOTE_IMAGE_NAME} .")
+    build_output = ssh_client.execute(f"cd /tmp/{build_dir} && docker build -t {container_name} .")
     console.log("[bold green]Docker Build Output:")
     for line in build_output.splitlines():
         console.print(f"> {line}")
@@ -150,13 +151,13 @@ def build_and_run_container(ssh_client, container_name, unique_dir, port_map):
     port_mapping = f"-p {port_map}" if port_map else ""
     
     console.log("[cyan]Running the Docker container...")
-    ssh_client.execute(f"docker run -d {port_mapping} --name {container_name} {REMOTE_IMAGE_NAME}")
+    ssh_client.execute(f"docker run -d {port_mapping} --name {container_name} {container_name}")
     console.log(f"[bold green]Container {container_name} is now running.")
 
-def clean_up_build_context(ssh_client, unique_dir):
+def clean_up_build_context(ssh_client, build_dir):
     """Removes the build context directory from the remote server."""
-    console.log(f"[cyan]Cleaning up remote build context directory: /tmp/{unique_dir}")
-    ssh_client.execute(f"rm -rf /tmp/{unique_dir}")
+    console.log(f"[cyan]Cleaning up remote build context directory: /tmp/{build_dir}")
+    ssh_client.execute(f"rm -rf /tmp/{build_dir}")
 
 def print_container_logs(ssh_client, container_name):
     """Prints the last 20 lines of the container logs."""
@@ -166,13 +167,27 @@ def print_container_logs(ssh_client, container_name):
     for line in logs.splitlines():
         console.print(f"> {line}")
 
-def main():
-    parser = argparse.ArgumentParser(description="Build and deploy a Docker container via SSH.")
-    parser.add_argument("-l", "--logs", action="store_true", help="Show logs of the container after deployment.")
-    args = parser.parse_args()
+@click.command()
+@click.option("-f", "--file", required=True, type=click.Path(exists=True), help="Path to the Dockerfile.")
+@click.option("-H", "--host", required=True, help="SSH host in the format username@host:port.")
+@click.option("-l", "--logs", is_flag=True, help="Show logs of the container after deployment.")
+def main(file, host, logs):
+    # Parse host information
+    match = re.match(r"^(?P<user>[a-zA-Z0-9_.-]+)@(?P<host>[a-zA-Z0-9_.-]+):(?P<port>\d+)$", host)
+    if not match:
+        console.log("[bold red]Error: Invalid host format. Use username@host:port.")
+        sys.exit(1)
 
-    console.log("[cyan]Reading Dockerfile from standard input...")
-    dockerfile_content = sys.stdin.read()
+    ssh_user = match.group("user")
+    ssh_host = match.group("host")
+    ssh_port = int(match.group("port"))
+
+    # set the full, absolute path to the Dockerfile
+    file = os.path.abspath(file)
+
+    # Read the Dockerfile
+    with open(file, "r") as dockerfile:
+        dockerfile_content = dockerfile.read()
 
     if not dockerfile_content.strip():
         console.log("[bold red]Error: Dockerfile is empty. Exiting.")
@@ -181,27 +196,32 @@ def main():
     # Parse the Dockerfile header for container metadata
     container_name, port_map = parse_comment_header(dockerfile_content)
 
+    # Ensure that the container name is only alphanumeric characters with dashes
+    if not re.match(r"^[a-zA-Z0-9-]+$", container_name):
+        console.log("[bold red]Error: Container name must be alphanumeric with dashes only. Exiting.")
+        sys.exit(1)
+
     if not container_name:
         console.log("[bold red]Error: 'Container-Name' header not set in the Dockerfile. Exiting.")
         sys.exit(1)
 
-    ssh_client = SSHClient(UNRAID_SERVER, SSH_PORT, SSH_USER)
+    ssh_client = SSHClient(ssh_host, ssh_port, ssh_user)
 
     try:
         ssh_client.connect()
 
         # Create and send build context
-        context_path = create_build_context(dockerfile_content)
-        unique_dir = send_build_context(ssh_client, context_path)
+        context_path = create_build_context(file)
+        build_dir = send_build_context(ssh_client, context_path, container_name)
 
         stop_and_remove_container(ssh_client, container_name)
-        build_and_run_container(ssh_client, container_name, unique_dir, port_map)
+        build_and_run_container(ssh_client, container_name, build_dir, port_map)
 
-        if args.logs:
+        if logs:
             print_container_logs(ssh_client, container_name)
 
         # Clean up remote build context
-        clean_up_build_context(ssh_client, unique_dir)
+        clean_up_build_context(ssh_client, build_dir)
 
         # Clean up local context tarball
         os.remove(context_path)
