@@ -16,6 +16,8 @@ export DOCKER_BRAINROT_URL="https://raw.githubusercontent.com/janoelze/docker-br
 alias docker-brainrot='uv run "$DOCKER_BRAINROT_URL"'
 ```
 
+`uv` allows execution of scripts via remote URLs. It'll install docker-brainrot's dependencies locally in a virtual environment.
+
 ## USAGE
 
 ### Set up a Dockerfile
