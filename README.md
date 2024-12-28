@@ -47,6 +47,16 @@ Specifies the remote Docker host in the format `username@host:port`.
 - `host`: Hostname or IP of the Docker host.
 - `port`: Port for SSH (e.g., `22`).
 
+## CUSTOM HEADERS
+
+### `Container-Name`
+**Required**
+The name of the container to be deployed. Must be unique and consist of alphanumeric characters and dashes (-).
+
+### `Port-Map`
+**Optional**
+The port mapping for the container. Must be in the format `host-port:container-port`.
+
 ## NOTES
 
 - You can create an alias for easier invocation, but uv allows you to run the script directly via a URL.
