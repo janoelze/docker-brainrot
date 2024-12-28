@@ -8,7 +8,7 @@
 # ///
 
 import sys
-import paramiko
+
 import os
 import tarfile
 import re
@@ -16,65 +16,15 @@ import uuid
 import click
 from rich.console import Console
 from rich.progress import track
-from datetime import datetime
 
-console = Console(log_path=False)
+
+
+from lib.SSHClient import SSHClient
+from lib.helpers import log_message
+
 
 # Global flag for verbosity
 DEBUG_MODE = False
-
-def log_message(level, message, debug_only=False):
-    if debug_only and not DEBUG_MODE:
-        return
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    console.log(f"{message}")
-
-class SSHClient:
-    """Helper class to manage SSH connections and commands."""
-    def __init__(self, host, port, username):
-        self.host = host
-        self.port = port
-        self.username = username
-        self.client = None
-
-    def connect(self):
-        """Establishes an SSH connection."""
-        try:
-            self.client = paramiko.SSHClient()
-            self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.client.connect(self.host, port=self.port, username=self.username)
-            log_message("info", f"Connected to {self.host}")
-        except Exception as e:
-            log_message("error", f"Failed to connect to {self.host}: {e}")
-            raise
-
-    def execute(self, command):
-        """Executes a command on the remote server."""
-        if not self.client:
-            raise ValueError("SSH connection not established.")
-        stdin, stdout, stderr = self.client.exec_command(command)
-        stdout_output = stdout.read().decode()
-        stderr_output = stderr.read().decode()
-        if stderr_output:
-            log_message("error", f"Error executing command '{command}': {stderr_output}")
-        return stdout_output
-
-    def upload_file(self, local_content, remote_path):
-        """Uploads a file to the remote server."""
-        if not self.client:
-            raise ValueError("SSH connection not established.")
-        sftp = self.client.open_sftp()
-        try:
-            with sftp.file(remote_path, "w") as remote_file:
-                remote_file.write(local_content)
-            log_message("info", f"File uploaded to {remote_path}")
-        finally:
-            sftp.close()
-
-    def close(self):
-        """Closes the SSH connection."""
-        if self.client:
-            self.client.close()
 
 def parse_comment_header(dockerfile_content):
     """Parses the comment header of the Dockerfile to extract metadata."""
@@ -94,8 +44,7 @@ def parse_comment_header(dockerfile_content):
 
 def create_build_context(dockerfile_path):
     """Creates a tarball of the build context."""
-    unique_id = str(uuid.uuid4())
-    context_path = f"/tmp/build_context_{unique_id}.tar.gz"
+    context_path = f"/tmp/build_context.tar.gz"
     dockerfile_contents = open(dockerfile_path, "r").read()
     dockerfile_dir = os.path.dirname(dockerfile_path)
     with tarfile.open(context_path, "w:gz") as tar:
@@ -112,9 +61,10 @@ def create_build_context(dockerfile_path):
 
 def send_build_context(ssh_client, context_path, container_name):
     """Uploads the build context tarball to the server."""
-    build_dir = f"build_context_{uuid.uuid4()}"
-    remote_path = f"/tmp/{build_dir}/build_context.tar.gz"
-    ssh_client.execute(f"mkdir -p /tmp/{build_dir}")
+    build_dir = f"/tmp/{container_name}_build_context"
+    remote_path = f"{build_dir}/build_context.tar.gz"
+    ssh_client.execute(f"mkdir -p {build_dir}")
+
     with open(context_path, "rb") as tarball:
         sftp = ssh_client.client.open_sftp()
         try:
@@ -124,7 +74,8 @@ def send_build_context(ssh_client, context_path, container_name):
             log_message("info", f"Build context uploaded to {remote_path}")
         finally:
             sftp.close()
-    ssh_client.execute(f"cd /tmp/{build_dir} && tar -xzf build_context.tar.gz")
+
+    ssh_client.execute(f"cd {build_dir} && tar -xzf build_context.tar.gz")
     return build_dir
 
 def stop_and_remove_container(ssh_client, container_name):
@@ -142,7 +93,7 @@ def stop_and_remove_container(ssh_client, container_name):
 def build_and_run_container(ssh_client, container_name, build_dir, port_map):
     """Builds and runs the Docker container on the remote server."""
     log_message("info", "Building the Docker image...")
-    build_output = ssh_client.execute(f"cd /tmp/{build_dir} && docker build -t {container_name} .")
+    build_output = ssh_client.execute(f"cd {build_dir} && docker build -t {container_name} .")
     if DEBUG_MODE:
         for line in build_output.splitlines():
             log_message("debug", line, debug_only=True)
@@ -151,11 +102,6 @@ def build_and_run_container(ssh_client, container_name, build_dir, port_map):
     log_message("info", "Running the Docker container...")
     ssh_client.execute(f"docker run -d {port_mapping} --name {container_name} {container_name}")
     log_message("success", f"Container {container_name} is now running.")
-
-def clean_up_build_context(ssh_client, build_dir):
-    """Removes the build context directory from the remote server."""
-    log_message("info", f"Cleaning up remote build context directory: /tmp/{build_dir}")
-    ssh_client.execute(f"rm -rf /tmp/{build_dir}")
 
 def print_container_logs(ssh_client, container_name):
     """Prints the last 20 lines of the container logs."""
@@ -215,9 +161,6 @@ def main(file, host, logs, debug):
 
         if logs:
             print_container_logs(ssh_client, container_name)
-
-        clean_up_build_context(ssh_client, build_dir)
-        os.remove(context_path)
 
     except Exception as e:
         log_message("error", f"Error: {e}")
