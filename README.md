@@ -42,7 +42,7 @@ $ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
 ````
 [04:19:41] Connected to 100.98.129.49
            Build context created at /tmp/build_context.tar.gz
-           Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
+           Uploading build context... ━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:25
            Build context uploaded to /tmp/my-cool-app_build_context/build_context.tar.gz
 [04:19:42] Checking for existing container: my-cool-app
            Stopping and removing existing container: my-cool-app
