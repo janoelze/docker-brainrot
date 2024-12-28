@@ -17,7 +17,7 @@ alias docker-brainrot='uv run "https://raw.githubusercontent.com/janoelze/docker
 
 ## USAGE
 
-### Create a Dockerfile with custom headers
+### Set up a Dockerfile
 
 ```Dockerfile
 # Container-Name: my-cool-app
@@ -31,7 +31,9 @@ CMD ["python", "-m", "http.server", "8001"]
 EXPOSE 8001
 ```
 
-## Run docker-brainrot via uv
+Note the `Container-Name` header, which is used to identify the container, and the `Port-Map` header, which specifies the port mapping for the container.
+
+## Deploy the Dockerfile
 
 ```bash
 $ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
