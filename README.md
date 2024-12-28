@@ -7,6 +7,14 @@ as part of my – our! – ongoing effort to avoid learning any actual Docker de
 * Collects files referenced via COPY and ADD commands in the Dockerfile and uploads them to the remote host.
 * Automatically (re)builds and runs the Docker container on the remote host.
 
+## INSTALLATION
+
+Create an alias in your shell profile:
+
+```bash
+alias docker-brainrot='uv run "https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py?v=$(date +%s)"'
+```
+
 ## USAGE
 
 ### Create a Dockerfile with custom headers
@@ -26,9 +34,7 @@ EXPOSE 8001
 ## Run docker-brainrot via uv
 
 ```bash
-$ uv run https://raw.githubusercontent.com/janoelze/docker-brainrot/main/d.py \
-  -f ./path/to/Dockerfile \
-  -H "user@100.98.129.49:22"
+$ docker-brainrot -f ./path/to/Dockerfile -H "user@100.98.129.49:22"
 ```
 
 ````bash
